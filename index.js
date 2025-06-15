@@ -17,12 +17,18 @@ const app = express();
 const server = createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: 'http://localhost:5173',
+    origin: 'https://taskswapfrontend.onrender.com', // Update to deployed frontend URL
     methods: ['GET', 'POST'],
+    credentials: true, // Allow cookies or auth tokens if needed
   },
 });
 
-app.use(cors());
+// Update cors middleware to match
+app.use(cors({
+  origin: 'https://taskswapfrontend.onrender.com',
+  credentials: true,
+}));
+
 app.use(express.json());
 
 app.use('/api/auth', authRoutes);
@@ -48,7 +54,6 @@ io.on('connection', (socket) => {
         throw new Error('Missing required fields: taskId, text, or sender');
       }
 
-      // Create a new message directly
       const newMessage = new Message({
         taskId,
         text,
@@ -59,12 +64,11 @@ io.on('connection', (socket) => {
       });
       const savedMessage = await newMessage.save();
 
-      // Emit to task room with the full message object
       io.to(taskId).emit('receiveMessage', {
         ...savedMessage.toObject(),
-        sender: { _id: sender, name: senderName }, // Ensure sender structure
+        sender: { _id: sender, name: senderName },
       });
-      callback({ success: true, message: savedMessage }); // Return saved message
+      callback({ success: true, message: savedMessage });
     } catch (error) {
       console.error('Message send error:', error);
       callback({ success: false, error: error.message });
@@ -96,7 +100,7 @@ const PORT = process.env.PORT || 5000;
 server.listen(PORT, async () => {
   try {
     await connectDB(process.env.MONGO_URI);
-    console.log(`Server running on http://localhost:${PORT}`);
+    console.log(`Server running on port ${PORT}`);
   } catch (error) {
     console.error('Server startup error:', error);
   }
