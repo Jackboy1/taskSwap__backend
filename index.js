@@ -15,25 +15,23 @@ dotenv.config();
 
 const app = express();
 const server = createServer(app);
-const io = new Server(server, {
-  cors: {
-    origin: 'https://taskswapfrontend.onrender.com', // Update to deployed frontend URL
-    methods: ['GET', 'POST'],
-    credentials: true, // Allow cookies or auth tokens if needed
-  },
-});
+const corsOptions = {
+  origin: 'https://taskswapfrontend.onrender.com', // Match your deployed frontend URL
+  methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allow all necessary methods
+  credentials: true, // Allow cookies or auth tokens if needed
+};
 
-// Update cors middleware to match
-app.use(cors({
-  origin: 'https://taskswapfrontend.onrender.com',
-  credentials: true,
-}));
-
+// Apply CORS to Express app
+app.use(cors(corsOptions));
 app.use(express.json());
 
 app.use('/api/auth', authRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/messages', messageRoutes);
+
+const io = new Server(server, {
+  cors: corsOptions, // Use the same CORS options for Socket.IO
+});
 
 io.on('connection', (socket) => {
   console.log('User connected:', socket.id);
