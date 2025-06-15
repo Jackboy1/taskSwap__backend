@@ -25,6 +25,15 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 
+// Set Content Security Policy
+app.use((req, res, next) => {
+  res.setHeader(
+    'Content-Security-Policy',
+    "default-src 'self'; font-src 'self' https://fonts.googleapis.com; style-src-elem 'self' https://fonts.googleapis.com; connect-src 'self' https://taskswap-backend-23oy.onrender.com wss://taskswap-backend-23oy.onrender.com;"
+  );
+  next();
+});
+
 app.use('/api/auth', authRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/messages', messageRoutes);
